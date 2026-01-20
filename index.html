@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>간단한 퀴즈</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .question-container {
+            margin-bottom: 30px;
+        }
+
+        .question-number {
+            color: #667eea;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .question {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .options {
+            list-style: none;
+        }
+
+        .option {
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+
+        .option:hover {
+            background: #e8e8e8;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        button.hidden {
+            display: none;
+        }
+
+        .result-container {
+            text-align: center;
+        }
+
+        .result-title {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .score {
+            font-size: 3em;
+            color: #667eea;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .score-text {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .restart-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .restart-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .score-summary {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .explanations-container {
+            text-align: left;
+            margin-top: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .explanation-item {
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .explanation-item.incorrect {
+            border-left-color: #e74c3c;
+        }
+
+        .explanation-item.correct {
+            border-left-color: #27ae60;
+        }
+
+        .explanation-question {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .explanation-status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .explanation-status.correct {
+            background: #27ae60;
+            color: white;
+        }
+
+        .explanation-status.incorrect {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .explanation-answer {
+            margin: 10px 0;
+            font-size: 0.95em;
+            color: #555;
+        }
+
+        .explanation-text {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.95em;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .user-answer {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        .correct-answer {
+            color: #27ae60;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>퀴즈 시간!</h1>
+        
+        <div id="quiz-content">
+            <div class="question-container">
+                <div class="question-number" id="question-number"></div>
+                <div class="question" id="question"></div>
+                <ul class="options" id="options"></ul>
+            </div>
+            <div class="button-container">
+                <button id="prev-btn" onclick="previousQuestion()" disabled>이전</button>
+                <button id="next-btn" onclick="nextQuestion()">다음</button>
+            </div>
+        </div>
+
+        <div id="result-content" class="result-container" style="display: none;">
+            <div class="result-title">퀴즈 완료!</div>
+            <div class="score" id="score"></div>
+            <div class="score-summary" id="score-summary"></div>
+            <div class="score-text" id="score-text"></div>
+            <div class="explanations-container" id="explanations-container"></div>
+            <button class="restart-btn" onclick="restartQuiz()">다시 시작</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "숏폼 콘텐츠에서 \"첫 3초가 전부다\"라는 말이 나온 가장 큰 이유는?",
+                options: ["광고 수익 구조 때문", "영상 길이 제한 때문", "스크롤 중심의 빠른 소비 문화 때문", "자막 자동 생성 기능 때문"],
+                correct: 2,
+                explanation: "숏폼 콘텐츠는 사용자가 빠르게 스크롤하며 콘텐츠를 소비하는 문화에서 탄생했습니다. 첫 3초 안에 시청자의 관심을 끌지 못하면 즉시 다음 콘텐츠로 넘어가기 때문에, 첫 3초가 콘텐츠의 성공을 좌우하는 핵심 요소가 되었습니다."
+            },
+            {
+                question: "다음 중 생성형 AI가 직접적으로 도와주기 어려운 영역은?",
+                options: ["아이디어 다량 생성", "훅 문장 자동 생성", "사실의 100% 정확성 보장", "자막 톤 변형"],
+                correct: 2,
+                explanation: "생성형 AI는 환각(Hallucination) 현상으로 인해 사실이 아닌 내용을 사실처럼 생성할 수 있습니다. 따라서 AI가 생성한 내용의 100% 정확성을 보장하기는 어렵습니다. 항상 사실 확인(fact-checking)이 필요합니다."
+            },
+            {
+                question: "AI Hallucination(환각)에 대한 설명으로 올바른 것은?",
+                options: ["AI가 의도적으로 거짓말을 하는 현상", "사실이 아닌 내용을 사실처럼 그럴듯하게 생성하는 현상", "AI가 검색 결과를 잘못 불러오는 오류", "이미지 생성에서만 발생하는 문제"],
+                correct: 1,
+                explanation: "AI Hallucination(환각)은 AI가 학습한 데이터를 바탕으로 사실이 아닌 내용을 사실처럼 그럴듯하게 생성하는 현상입니다. AI는 의도적으로 거짓말하는 것이 아니라, 패턴을 학습하여 생성하는 과정에서 발생하는 부작용입니다. 텍스트, 이미지 등 모든 생성형 AI에서 발생할 수 있습니다."
+            },
+            {
+                question: "환각을 줄이기 위한 프롬프트 방법으로 가장 적절한 것은?",
+                options: ["모르면 모른다고 말해달라고 미리 지시한다", "결과를 그대로 복사해 사용한다", "감정 표현을 많이 사용한다", "질문을 최대한 짧게 작성한다"],
+                correct: 0,
+                explanation: "AI에게 불확실한 내용에 대해 추측하지 말고 모르면 모른다고 명확히 말하도록 지시하는 것이 환각을 줄이는 효과적인 방법입니다. 이렇게 하면 AI가 확실하지 않은 내용을 만들어내는 것을 방지할 수 있습니다."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let selectedAnswers = [];
+        let score = 0;
+
+        function initQuiz() {
+            selectedAnswers = new Array(questions.length).fill(null);
+            currentQuestion = 0;
+            score = 0;
+            document.getElementById('quiz-content').style.display = 'block';
+            document.getElementById('result-content').style.display = 'none';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById('question-number').textContent = `문제 ${currentQuestion + 1} / ${questions.length}`;
+            document.getElementById('question').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const li = document.createElement('li');
+                li.className = 'option';
+                if (selectedAnswers[currentQuestion] === index) {
+                    li.classList.add('selected');
+                }
+                li.textContent = option;
+                li.onclick = () => selectOption(index);
+                optionsContainer.appendChild(li);
+            });
+
+            // Update button states
+            document.getElementById('prev-btn').disabled = currentQuestion === 0;
+            document.getElementById('next-btn').textContent = currentQuestion === questions.length - 1 ? '제출' : '다음';
+        }
+
+        function selectOption(index) {
+            selectedAnswers[currentQuestion] = index;
+            showQuestion();
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion();
+            }
+        }
+
+        function calculateScore() {
+            score = 0;
+            questions.forEach((question, index) => {
+                if (selectedAnswers[index] === question.correct) {
+                    score++;
+                }
+            });
+        }
+
+        function showResults() {
+            calculateScore();
+            document.getElementById('quiz-content').style.display = 'none';
+            document.getElementById('result-content').style.display = 'block';
+            document.getElementById('score').textContent = `${score} / ${questions.length}`;
+            document.getElementById('score-summary').textContent = `총 ${questions.length}문제 중 ${score}문제를 맞췄습니다.`;
+            
+            const percentage = (score / questions.length) * 100;
+            let message = '';
+            if (percentage === 100) {
+                message = '완벽해요! 모든 문제를 맞췄습니다!';
+            } else if (percentage >= 70) {
+                message = '훌륭해요! 잘하셨습니다!';
+            } else if (percentage >= 50) {
+                message = '괜찮아요! 계속 연습하세요!';
+            } else {
+                message = '더 공부하고 다시 도전해보세요!';
+            }
+            document.getElementById('score-text').textContent = message;
+            
+            // Show explanations for each question
+            const explanationsContainer = document.getElementById('explanations-container');
+            explanationsContainer.innerHTML = '<h3 style="text-align: center; margin-bottom: 20px; color: #333;">문제 해설</h3>';
+            
+            questions.forEach((question, index) => {
+                const isCorrect = selectedAnswers[index] === question.correct;
+                const userAnswer = selectedAnswers[index] !== null ? question.options[selectedAnswers[index]] : '미응답';
+                const correctAnswer = question.options[question.correct];
+                
+                const explanationItem = document.createElement('div');
+                explanationItem.className = `explanation-item ${isCorrect ? 'correct' : 'incorrect'}`;
+                
+                const statusBadge = document.createElement('span');
+                statusBadge.className = `explanation-status ${isCorrect ? 'correct' : 'incorrect'}`;
+                statusBadge.textContent = isCorrect ? '정답' : '오답';
+                
+                const questionText = document.createElement('div');
+                questionText.className = 'explanation-question';
+                questionText.textContent = `문제 ${index + 1}: ${question.question}`;
+                
+                const answerInfo = document.createElement('div');
+                answerInfo.className = 'explanation-answer';
+                if (isCorrect) {
+                    answerInfo.innerHTML = `✓ 정답: <span class="correct-answer">${correctAnswer}</span>`;
+                } else {
+                    answerInfo.innerHTML = `✗ 선택한 답: <span class="user-answer">${userAnswer}</span><br>✓ 정답: <span class="correct-answer">${correctAnswer}</span>`;
+                }
+                
+                const explanationText = document.createElement('div');
+                explanationText.className = 'explanation-text';
+                explanationText.textContent = question.explanation;
+                
+                explanationItem.appendChild(statusBadge);
+                explanationItem.appendChild(questionText);
+                explanationItem.appendChild(answerInfo);
+                explanationItem.appendChild(explanationText);
+                
+                explanationsContainer.appendChild(explanationItem);
+            });
+        }
+
+        function restartQuiz() {
+            initQuiz();
+        }
+
+        // Initialize quiz when page loads
+        initQuiz();
+    </script>
+</body>
+</html>
